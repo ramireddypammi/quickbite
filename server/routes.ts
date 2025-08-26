@@ -1,14 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertOrderSchema, insertOrderItemSchema } from "@shared/schema";
+import { insertUserSchema, insertOrderSchema, insertOrderItemSchema, loginSchema, registerSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const userData = registerSchema.parse(req.body);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(userData.email);
@@ -16,25 +16,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User already exists" });
       }
       
-      const user = await storage.createUser(userData);
-      res.json({ user: { id: user.id, username: user.username, email: user.email } });
+      const user = await storage.createUser({
+        ...userData,
+        role: "user"
+      });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          role: user.role,
+          phone: user.phone,
+          address: user.address
+        } 
+      });
     } catch (error) {
+      console.error("Registration error:", error);
       res.status(400).json({ message: "Invalid user data" });
     }
   });
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password } = loginSchema.parse(req.body);
       const user = await storage.getUserByEmail(email);
       
       if (!user || user.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      res.json({ user: { id: user.id, username: user.username, email: user.email } });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          role: user.role,
+          phone: user.phone,
+          address: user.address
+        } 
+      });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(400).json({ message: "Login failed" });
+    }
+  });
+
+  // Get current user (for maintaining session)
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      const userId = req.headers['user-id'] as string;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          email: user.email, 
+          role: user.role,
+          phone: user.phone,
+          address: user.address
+        } 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user" });
     }
   });
 
@@ -191,6 +242,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ message: "Payment verification failed" });
+    }
+  });
+
+  // Admin routes
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const restaurants = await storage.getAllRestaurants();
+      const totalRestaurants = restaurants.length;
+      
+      // Mock stats for demo
+      const stats = {
+        totalRestaurants,
+        totalOrders: 0,
+        totalUsers: 0,
+        totalRevenue: 0
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/restaurants", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const restaurants = await storage.getAllRestaurants();
+      res.json(restaurants);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch restaurants" });
+    }
+  });
+
+  app.post("/api/admin/restaurants", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const restaurant = await storage.createRestaurant(req.body);
+      res.json(restaurant);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create restaurant" });
+    }
+  });
+
+  app.post("/api/admin/menu-items", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const menuItem = await storage.createMenuItem(req.body);
+      res.json(menuItem);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create menu item" });
     }
   });
 

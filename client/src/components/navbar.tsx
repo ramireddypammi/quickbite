@@ -1,15 +1,27 @@
 import { useState } from 'react';
-import { Link } from 'wouter';
-import { Search, MapPin, ShoppingCart, ChevronDown, Utensils } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import { Search, MapPin, ShoppingCart, ChevronDown, Utensils, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCart } from '@/lib/cart-context';
 import { useAuth } from '@/lib/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Navbar() {
   const { state: cartState, openCart } = useCart();
-  const { auth } = useAuth();
+  const { auth, logout } = useAuth();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully.",
+    });
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -67,13 +79,67 @@ export default function Navbar() {
             </Button>
 
             {/* User Profile */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-              <span className="hidden md:block text-sm text-gray-700" data-testid="text-username">
-                {auth.isAuthenticated ? auth.user?.username : 'Guest'}
-              </span>
-              <ChevronDown className="text-xs text-gray-500 w-3 h-3" />
-            </div>
+            {auth.isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2" data-testid="button-user-menu">
+                    <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <span className="hidden md:block text-sm text-gray-700" data-testid="text-username">
+                      {auth.user?.username}
+                    </span>
+                    <ChevronDown className="text-xs text-gray-500 w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/orders" className="flex items-center cursor-pointer" data-testid="link-orders">
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      My Orders
+                    </Link>
+                  </DropdownMenuItem>
+                  {auth.user?.role === 'admin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="flex items-center cursor-pointer" data-testid="link-admin">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin Panel
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="text-red-600 cursor-pointer"
+                    data-testid="button-logout"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="ghost" 
+                  asChild 
+                  size="sm"
+                  data-testid="button-login"
+                >
+                  <Link href="/login">Login</Link>
+                </Button>
+                <Button 
+                  size="sm" 
+                  asChild
+                  data-testid="button-signup"
+                >
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

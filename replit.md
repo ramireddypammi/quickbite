@@ -35,19 +35,27 @@ The backend uses a storage abstraction pattern that allows switching between in-
 The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations:
 
 - **Schema Definition**: Centralized schema in TypeScript using Drizzle's column definitions
-- **Database Tables**: Users, restaurants, menu items, orders, and order items
+- **Database Tables**: Users (with roles), restaurants, menu items, orders, and order items
 - **Type Safety**: Full TypeScript integration from database to frontend
 - **Migrations**: Drizzle Kit for database migrations and schema management
+- **Authentication Storage**: User credentials, roles, and profile information stored in PostgreSQL
+- **Data Seeding**: Automatic seeding of sample restaurants, menu items, and admin user
 
 ## Authentication and Authorization
-Basic authentication system implemented with:
+Complete authentication system implemented with:
 
-- **User Registration/Login**: Simple email/password authentication
-- **Session Management**: Currently using basic validation without JWT tokens
+- **User Registration/Login**: Full signup and login functionality with form validation
+- **Role-based Access**: Support for 'user' and 'admin' roles with different permissions
 - **Protected Routes**: Client-side route protection based on authentication state
 - **User Context**: React Context for managing user state across the application
+- **Session Management**: Local state management with persistent authentication
+- **Admin Panel**: Full admin interface for managing restaurants and menu items
 
-The current implementation is simplified but provides the foundation for more robust authentication systems.
+The authentication system includes:
+- Login page (/login) with email/password authentication
+- Signup page (/signup) with user registration
+- Admin panel (/admin) for administrative functions
+- User menu in navbar with logout and role-based navigation
 
 # External Dependencies
 

@@ -11,16 +11,25 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
-): Promise<Response> {
+  customHeaders?: Record<string, string>
+): Promise<any> {
+  const headers: Record<string, string> = {
+    ...(data ? { "Content-Type": "application/json" } : {}),
+    ...(customHeaders || {})
+  };
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 
   await throwIfResNotOk(res);
-  return res;
+  
+  // Return JSON if response has content, otherwise return empty object
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

@@ -10,6 +10,9 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   phone: text("phone"),
   address: text("address"),
+  role: text("role").notNull().default("user"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
 export const restaurants = pgTable("restaurants", {
@@ -61,6 +64,20 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   phone: true,
   address: true,
+  role: true,
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export const registerSchema = z.object({
+  username: z.string().min(2, "Username must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
 });
 
 export const insertRestaurantSchema = createInsertSchema(restaurants).pick({
