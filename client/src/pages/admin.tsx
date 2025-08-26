@@ -46,6 +46,28 @@ export default function Admin() {
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
 
+  const { data: stats } = useQuery({
+    queryKey: ['/api/admin/stats'],
+    queryFn: async () => {
+      return apiRequest('GET', '/api/admin/stats', undefined, {
+        'user-id': auth.user!.id,
+        'user-role': auth.user!.role,
+      });
+    },
+    enabled: auth.isAuthenticated && auth.user?.role === 'admin',
+  });
+
+  const { data: restaurants } = useQuery<Restaurant[]>({
+    queryKey: ['/api/admin/restaurants'],
+    queryFn: async () => {
+      return apiRequest('GET', '/api/admin/restaurants', undefined, {
+        'user-id': auth.user!.id,
+        'user-role': auth.user!.role,
+      });
+    },
+    enabled: auth.isAuthenticated && auth.user?.role === 'admin',
+  });
+
   // Check if user is admin
   if (!auth.isAuthenticated || auth.user?.role !== 'admin') {
     return (
@@ -61,26 +83,6 @@ export default function Admin() {
       </div>
     );
   }
-
-  const { data: stats } = useQuery({
-    queryKey: ['/api/admin/stats'],
-    queryFn: async () => {
-      return apiRequest('GET', '/api/admin/stats', undefined, {
-        'user-id': auth.user!.id,
-        'user-role': auth.user!.role,
-      });
-    },
-  });
-
-  const { data: restaurants } = useQuery<Restaurant[]>({
-    queryKey: ['/api/admin/restaurants'],
-    queryFn: async () => {
-      return apiRequest('GET', '/api/admin/restaurants', undefined, {
-        'user-id': auth.user!.id,
-        'user-role': auth.user!.role,
-      });
-    },
-  });
 
   const restaurantForm = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
