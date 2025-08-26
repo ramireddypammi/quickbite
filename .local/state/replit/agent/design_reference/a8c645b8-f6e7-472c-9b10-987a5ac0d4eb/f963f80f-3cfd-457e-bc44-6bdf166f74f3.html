@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBite - Food Delivery Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'inter': ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'primary': '#FF6B35',
+            'primary-dark': '#E55527',
+            'success': '#10B981',
+            'gray-50': '#F9FAFB',
+            'gray-900': '#374151',
+          }
+        }
+      }
+    };
+    </script>
+</head>
+<body class="font-inter bg-gray-50">
+    
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-utensils text-white text-lg"></i>
+                    </div>
+                    <span class="text-2xl font-bold text-gray-900">QuickBite</span>
+                </div>
+
+                <!-- Location Selector -->
+                <div class="hidden md:flex items-center space-x-2 bg-gray-50 rounded-lg px-4 py-2">
+                    <i class="fas fa-map-marker-alt text-primary"></i>
+                    <span class="text-sm text-gray-700" data-mock="true">Downtown, New York</span>
+                    <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="hidden lg:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input 
+                            type="text" 
+                            placeholder="Search restaurants, cuisines..." 
+                            class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            data-mock="true"
+                        >
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Cart -->
+                    <button class="relative p-2 text-gray-600 hover:text-primary transition-colors" data-event="click:openCart">
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" data-bind="cart.itemCount">3</span>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gray-300 rounded-full"></div>
+                        <span class="hidden md:block text-sm text-gray-700" data-bind="user.name">John Doe</span>
+                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: HeroSection -->
+    <section class="relative bg-gradient-to-r from-primary to-primary-dark text-white py-16 overflow-hidden">
+        <!-- A vibrant collage of various delicious dishes including pizza, burgers, and salads arranged artistically -->
+        <div class="absolute inset-0 bg-black opacity-40"></div>
+        <div 
+            class="absolute inset-0 bg-cover bg-center"
+            style="background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=1080')"
+        ></div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-2xl">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                    Delicious food,<br>delivered fast
+                </h1>
+                <p class="text-lg md:text-xl mb-8 text-gray-100">
+                    Order from your favorite restaurants and get food delivered to your doorstep in minutes.
+                </p>
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <button 
+                        class="bg-white text-primary font-semibold px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                        data-event="click:orderNow"
+                    >
+                        Order Now
+                    </button>
+                    <button 
+                        class="border-2 border-white text-white font-semibold px-8 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors"
+                        data-event="click:learnMore"
+                    >
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: HeroSection -->
+
+    <!-- @COMPONENT: CategoryFilter -->
+    <section class="bg-white py-8">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Browse by Category</h2>
+            <div class="flex overflow-x-auto space-x-4 pb-4">
+                <!-- @MAP: categories.map(category => ( -->
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory" data-implementation="Filter restaurants by category">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-pizza-slice text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Pizza</span>
+                </div>
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-hamburger text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Burgers</span>
+                </div>
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-leaf text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Healthy</span>
+                </div>
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-ice-cream text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Desserts</span>
+                </div>
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-coffee text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Coffee</span>
+                </div>
+                <div class="flex-shrink-0 text-center cursor-pointer group" data-event="click:filterByCategory">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <i class="fas fa-drumstick-bite text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-gray-600 group-hover:text-primary" data-mock="true">Chicken</span>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: CategoryFilter -->
+
+    <!-- @COMPONENT: RestaurantListing -->
+    <section class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">Popular Restaurants</h2>
+                <div class="flex items-center space-x-4">
+                    <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" data-implementation="Filter restaurants by criteria">
+                        <option data-mock="true">Sort by: Popularity</option>
+                        <option data-mock="true">Rating</option>
+                        <option data-mock="true">Delivery Time</option>
+                        <option data-mock="true">Price Range</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- @MAP: restaurants.map(restaurant => ( -->
+                
+                <!-- Restaurant Card 1 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer group" data-event="click:viewRestaurant" data-implementation="Navigate to restaurant detail page">
+                    <div class="relative">
+                        <!-- A beautifully plated gourmet burger with crispy fries in a modern restaurant setting -->
+                        <img src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Burger Palace restaurant" class="w-full h-48 object-cover rounded-t-xl" data-mock-image="true" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-success text-white text-xs font-medium px-2 py-1 rounded-full">FREE DELIVERY</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50" data-event="click:toggleFavorite">
+                                <i class="far fa-heart text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors" data-mock="true">Burger Palace</h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                <span class="text-sm font-medium text-gray-700" data-mock="true">4.8</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3" data-mock="true">American • Burgers • Fast Food</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600" data-mock="true">
+                                <i class="fas fa-clock mr-1"></i>25-35 min
+                            </span>
+                            <span class="text-gray-600" data-mock="true">$3.99 delivery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurant Card 2 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer group" data-event="click:viewRestaurant">
+                    <div class="relative">
+                        <!-- A traditional wood-fired pizza with melting mozzarella cheese and fresh basil in an Italian pizzeria -->
+                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Mario's Pizzeria" class="w-full h-48 object-cover rounded-t-xl" data-mock-image="true" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-primary text-white text-xs font-medium px-2 py-1 rounded-full">20% OFF</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50" data-event="click:toggleFavorite">
+                                <i class="fas fa-heart text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors" data-mock="true">Mario's Pizzeria</h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                <span class="text-sm font-medium text-gray-700" data-mock="true">4.9</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3" data-mock="true">Italian • Pizza • Pasta</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600" data-mock="true">
+                                <i class="fas fa-clock mr-1"></i>20-30 min
+                            </span>
+                            <span class="text-gray-600" data-mock="true">$2.99 delivery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurant Card 3 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer group" data-event="click:viewRestaurant">
+                    <div class="relative">
+                        <!-- A colorful Buddha bowl with quinoa, avocado, fresh vegetables and edible flowers in a health-focused cafe -->
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Green Garden Cafe" class="w-full h-48 object-cover rounded-t-xl" data-mock-image="true" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-success text-white text-xs font-medium px-2 py-1 rounded-full">HEALTHY</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50" data-event="click:toggleFavorite">
+                                <i class="far fa-heart text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors" data-mock="true">Green Garden Cafe</h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                <span class="text-sm font-medium text-gray-700" data-mock="true">4.7</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3" data-mock="true">Healthy • Salads • Bowls</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600" data-mock="true">
+                                <i class="fas fa-clock mr-1"></i>15-25 min
+                            </span>
+                            <span class="text-gray-600" data-mock="true">$4.99 delivery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurant Card 4 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer group" data-event="click:viewRestaurant">
+                    <div class="relative">
+                        <!-- A platter of assorted sushi rolls with wasabi and ginger in an elegant Japanese restaurant -->
+                        <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" alt="Tokyo Sushi Bar" class="w-full h-48 object-cover rounded-t-xl" data-mock-image="true" />
+                        <div class="absolute top-3 right-3">
+                            <button class="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50" data-event="click:toggleFavorite">
+                                <i class="far fa-heart text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-semibold text-gray-900 group-hover:text-primary transition-colors" data-mock="true">Tokyo Sushi Bar</h3>
+                            <div class="flex items-center space-x-1">
+                                <i class="fas fa-star text-yellow-400 text-sm"></i>
+                                <span class="text-sm font-medium text-gray-700" data-mock="true">4.6</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3" data-mock="true">Japanese • Sushi • Asian</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600" data-mock="true">
+                                <i class="fas fa-clock mr-1"></i>30-40 min
+                            </span>
+                            <span class="text-gray-600" data-mock="true">$5.99 delivery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- @END_MAP )) -->
+            </div>
+
+            <div class="text-center mt-12">
+                <button class="bg-primary text-white font-semibold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors" data-event="click:viewAllRestaurants">
+                    View All Restaurants
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- @END_COMPONENT: RestaurantListing -->
+
+    <!-- @COMPONENT: MenuModal [Mock detailed restaurant menu view] -->
+    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" data-implementation="Show/hide based on restaurant selection">
+        <div class="bg-white w-full h-full md:w-4/5 md:h-5/6 md:mx-auto md:mt-8 md:rounded-lg overflow-y-auto">
+            <!-- Restaurant Header -->
+            <div class="relative">
+                <!-- A wide shot of a restaurant interior with warm lighting and food preparation in the background -->
+                <div class="h-64 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=600')"></div>
+                <div class="absolute top-4 right-4">
+                    <button class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50" data-event="click:closeModal">
+                        <i class="fas fa-times text-gray-600"></i>
+                    </button>
+                </div>
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
+                    <h2 class="text-3xl font-bold text-white mb-2" data-mock="true">Mario's Pizzeria</h2>
+                    <div class="flex items-center text-white space-x-4">
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <span data-mock="true">4.9 (1.2k reviews)</span>
+                        </div>
+                        <span data-mock="true">Italian • Pizza</span>
+                        <span data-mock="true">20-30 min</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Categories -->
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex space-x-6 overflow-x-auto">
+                    <button class="text-primary border-b-2 border-primary pb-2 whitespace-nowrap" data-mock="true">Popular Items</button>
+                    <button class="text-gray-600 hover:text-primary pb-2 whitespace-nowrap" data-mock="true">Pizza</button>
+                    <button class="text-gray-600 hover:text-primary pb-2 whitespace-nowrap" data-mock="true">Pasta</button>
+                    <button class="text-gray-600 hover:text-primary pb-2 whitespace-nowrap" data-mock="true">Salads</button>
+                    <button class="text-gray-600 hover:text-primary pb-2 whitespace-nowrap" data-mock="true">Desserts</button>
+                </div>
+            </div>
+
+            <!-- Menu Items -->
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6" data-mock="true">Popular Items</h3>
+                
+                <!-- Menu Item -->
+                <div class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1" data-mock="true">Margherita Pizza</h4>
+                        <p class="text-sm text-gray-600 mb-2" data-mock="true">Fresh mozzarella, tomato sauce, basil, olive oil</p>
+                        <span class="text-lg font-bold text-primary" data-mock="true">$18.99</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- A classic Margherita pizza with fresh basil leaves and melted mozzarella -->
+                        <img src="https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200" alt="Margherita Pizza" class="w-20 h-20 object-cover rounded-lg" data-mock-image="true" />
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors" data-event="click:addToCart" data-implementation="Add item to shopping cart">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1" data-mock="true">Pepperoni Pizza</h4>
+                        <p class="text-sm text-gray-600 mb-2" data-mock="true">Pepperoni, mozzarella cheese, tomato sauce</p>
+                        <span class="text-lg font-bold text-primary" data-mock="true">$21.99</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- A pepperoni pizza with crispy pepperoni slices and golden cheese -->
+                        <img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200" alt="Pepperoni Pizza" class="w-20 h-20 object-cover rounded-lg" data-mock-image="true" />
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors" data-event="click:addToCart">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900 mb-1" data-mock="true">Caesar Salad</h4>
+                        <p class="text-sm text-gray-600 mb-2" data-mock="true">Romaine lettuce, parmesan cheese, croutons, caesar dressing</p>
+                        <span class="text-lg font-bold text-primary" data-mock="true">$12.99</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- A fresh Caesar salad with crisp romaine lettuce and parmesan shavings -->
+                        <img src="https://images.unsplash.com/photo-1551248429-40975aa4de74?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=200&h=200" alt="Caesar Salad" class="w-20 h-20 object-cover rounded-lg" data-mock-image="true" />
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors" data-event="click:addToCart">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MenuModal -->
+
+    <!-- @COMPONENT: CartSidebar -->
+    <div id="cartSidebar" class="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform z-50" data-implementation="Show/hide based on cart state">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-900">Your Order</h3>
+                <button class="p-2 hover:bg-gray-100 rounded-lg" data-event="click:closeCart">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <!-- @STATE: cartItems:array = [] -->
+            <!-- Cart Items -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900" data-mock="true">Margherita Pizza</h4>
+                        <p class="text-sm text-gray-600" data-mock="true">From Mario's Pizzeria</p>
+                        <span class="text-primary font-semibold" data-mock="true">$18.99</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200" data-event="click:decreaseQuantity">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="w-8 text-center" data-mock="true">2</span>
+                        <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200" data-event="click:increaseQuantity">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900" data-mock="true">Caesar Salad</h4>
+                        <p class="text-sm text-gray-600" data-mock="true">From Mario's Pizzeria</p>
+                        <span class="text-primary font-semibold" data-mock="true">$12.99</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200" data-event="click:decreaseQuantity">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="w-8 text-center" data-mock="true">1</span>
+                        <button class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200" data-event="click:increaseQuantity">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span>Subtotal</span>
+                        <span data-mock="true">$50.97</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Delivery Fee</span>
+                        <span data-mock="true">$2.99</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Tax</span>
+                        <span data-mock="true">$4.32</span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="flex justify-between font-semibold text-lg">
+                        <span>Total</span>
+                        <span data-mock="true">$58.28</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Button -->
+        <div class="p-6 border-t border-gray-200">
+            <button class="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-primary-dark transition-colors" data-event="click:proceedToCheckout" data-implementation="Navigate to checkout page">
+                Proceed to Checkout
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CartSidebar -->
+
+    <!-- @COMPONENT: CheckoutModal -->
+    <div id="checkoutModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" data-implementation="Show during checkout process">
+        <div class="bg-white w-full h-full md:w-3/4 lg:w-2/3 xl:w-1/2 md:mx-auto md:mt-8 md:h-auto md:rounded-lg overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-gray-900">Checkout</h2>
+                    <button class="p-2 hover:bg-gray-100 rounded-lg" data-event="click:closeCheckout">
+                        <i class="fas fa-times text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-8">
+                <!-- Delivery Address -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Delivery Address</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Street Address" class="border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" />
+                        <input type="text" placeholder="Apartment/Suite" class="border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" />
+                        <input type="text" placeholder="City" class="border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" />
+                        <input type="text" placeholder="ZIP Code" class="border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" data-mock="true" />
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="payment" value="card" class="mr-3" data-mock="true" />
+                            <i class="fas fa-credit-card mr-3 text-gray-600"></i>
+                            <span>Credit/Debit Card</span>
+                        </label>
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="payment" value="razorpay" class="mr-3" checked data-mock="true" />
+                            <i class="fas fa-mobile-alt mr-3 text-gray-600"></i>
+                            <span>Razorpay (UPI, Wallets, Banking)</span>
+                        </label>
+                        <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="payment" value="cod" class="mr-3" data-mock="true" />
+                            <i class="fas fa-money-bill-wave mr-3 text-gray-600"></i>
+                            <span>Cash on Delivery</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>2x Margherita Pizza</span>
+                            <span data-mock="true">$37.98</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>1x Caesar Salad</span>
+                            <span data-mock="true">$12.99</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery Fee</span>
+                            <span data-mock="true">$2.99</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Tax</span>
+                            <span data-mock="true">$4.32</span>
+                        </div>
+                        <hr class="my-3">
+                        <div class="flex justify-between font-semibold text-lg">
+                            <span>Total</span>
+                            <span data-mock="true">$58.28</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Place Order Button -->
+                <button class="w-full bg-primary text-white font-semibold py-4 rounded-lg hover:bg-primary-dark transition-colors text-lg" data-event="click:placeOrder" data-implementation="Process payment through Razorpay API">
+                    <i class="fas fa-lock mr-2"></i>Place Order - $58.28
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CheckoutModal -->
+
+    <!-- @COMPONENT: OrderTrackingSection -->
+    <div id="orderTracking" class="hidden py-12">
+        <div class="container mx-auto px-4 max-w-2xl">
+            <div class="bg-white rounded-xl shadow-sm p-8">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-check text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h2>
+                    <p class="text-gray-600">Your order #12345 has been placed successfully</p>
+                </div>
+
+                <!-- Order Status Timeline -->
+                <div class="space-y-6">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-success rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-semibold text-gray-900">Order Placed</h4>
+                            <p class="text-sm text-gray-600" data-mock="true">2:45 PM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-success rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-semibold text-gray-900">Order Confirmed</h4>
+                            <p class="text-sm text-gray-600" data-mock="true">2:47 PM</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-pulse">
+                            <i class="fas fa-utensils text-white text-sm"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-semibold text-gray-900">Preparing your food</h4>
+                            <p class="text-sm text-gray-600">Estimated time: 15-20 minutes</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center opacity-50">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-motorcycle text-gray-400 text-sm"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-medium text-gray-500">Out for delivery</h4>
+                            <p class="text-sm text-gray-400">Pending</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center opacity-50">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-home text-gray-400 text-sm"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-medium text-gray-500">Delivered</h4>
+                            <p class="text-sm text-gray-400">Pending</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-2">Delivery Details</h4>
+                    <p class="text-sm text-gray-600 mb-1" data-mock="true">Delivering to: 123 Main Street, Downtown</p>
+                    <p class="text-sm text-gray-600" data-mock="true">Estimated delivery: 3:05 PM - 3:15 PM</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: OrderTrackingSection -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-utensils text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">QuickBite</span>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4">Delicious food delivered fast to your doorstep.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">How it Works</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">For Restaurants</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">Partner with Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">Restaurant Dashboard</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors" data-mock="true">Support</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Contact Info</h4>
+                    <div class="space-y-2 text-sm text-gray-400">
+                        <p data-mock="true">
+                            <i class="fas fa-phone mr-2"></i>
+                            +1 (555) 123-4567
+                        </p>
+                        <p data-mock="true">
+                            <i class="fas fa-envelope mr-2"></i>
+                            support@quickbite.com
+                        </p>
+                        <p data-mock="true">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            123 Food Street, NY 10001
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+                <p data-mock="true">&copy; 2024 QuickBite. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Modal and sidebar controls
+            const menuModal = document.getElementById('menuModal');
+            const cartSidebar = document.getElementById('cartSidebar');
+            const checkoutModal = document.getElementById('checkoutModal');
+            const orderTracking = document.getElementById('orderTracking');
+
+            // Show menu modal when restaurant is clicked
+            document.querySelectorAll('[data-event="click:viewRestaurant"]').forEach(card => {
+                card.addEventListener('click', () => {
+                    menuModal.classList.remove('hidden');
+                });
+            });
+
+            // Close menu modal
+            document.querySelectorAll('[data-event="click:closeModal"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    menuModal.classList.add('hidden');
+                });
+            });
+
+            // Show cart sidebar
+            document.querySelectorAll('[data-event="click:openCart"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cartSidebar.classList.remove('translate-x-full');
+                });
+            });
+
+            // Close cart sidebar
+            document.querySelectorAll('[data-event="click:closeCart"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    cartSidebar.classList.add('translate-x-full');
+                });
+            });
+
+            // Show checkout modal
+            document.querySelectorAll('[data-event="click:proceedToCheckout"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    checkoutModal.classList.remove('hidden');
+                    cartSidebar.classList.add('translate-x-full');
+                });
+            });
+
+            // Close checkout modal
+            document.querySelectorAll('[data-event="click:closeCheckout"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    checkoutModal.classList.add('hidden');
+                });
+            });
+
+            // Place order and show tracking
+            document.querySelectorAll('[data-event="click:placeOrder"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    checkoutModal.classList.add('hidden');
+                    orderTracking.classList.remove('hidden');
+                    // Scroll to order tracking
+                    orderTracking.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Add to cart functionality (mock)
+            document.querySelectorAll('[data-event="click:addToCart"]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Show success feedback
+                    btn.innerHTML = '<i class="fas fa-check mr-2"></i>Added!';
+                    btn.classList.add('bg-success');
+                    setTimeout(() => {
+                        btn.innerHTML = 'Add to Cart';
+                        btn.classList.remove('bg-success');
+                    }, 2000);
+                });
+            });
+
+            // Quantity controls
+            document.querySelectorAll('[data-event="click:increaseQuantity"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const quantitySpan = btn.previousElementSibling;
+                    let quantity = parseInt(quantitySpan.textContent);
+                    quantitySpan.textContent = quantity + 1;
+                });
+            });
+
+            document.querySelectorAll('[data-event="click:decreaseQuantity"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const quantitySpan = btn.nextElementSibling;
+                    let quantity = parseInt(quantitySpan.textContent);
+                    if (quantity > 1) {
+                        quantitySpan.textContent = quantity - 1;
+                    }
+                });
+            });
+
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === menuModal) {
+                    menuModal.classList.add('hidden');
+                }
+                if (e.target === checkoutModal) {
+                    checkoutModal.classList.add('hidden');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
