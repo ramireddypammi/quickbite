@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 import type { Restaurant } from '@shared/schema';
+import OrderNotification from '@/components/order-notification';
+import { useNotificationSound } from '@/hooks/use-notification-sound';
 
 const restaurantSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -45,6 +47,9 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isRestaurantDialogOpen, setIsRestaurantDialogOpen] = useState(false);
   const [isMenuItemDialogOpen, setIsMenuItemDialogOpen] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState(0);
+  const [lastPendingCount, setLastPendingCount] = useState(0);
+  const playNotificationSound = useNotificationSound();
 
   const { data: stats } = useQuery({
     queryKey: ['/api/admin/stats'],
@@ -66,6 +71,33 @@ export default function Admin() {
       });
     },
     enabled: auth.isAuthenticated && auth.user?.role === 'admin',
+  });
+
+  const { data: orders } = useQuery({
+    queryKey: ['/api/admin/orders'],
+    queryFn: async () => {
+      return apiRequest('GET', '/api/admin/orders', undefined, {
+        'user-id': auth.user!.id,
+        'user-role': auth.user!.role,
+      });
+    },
+    enabled: auth.isAuthenticated && auth.user?.role === 'admin',
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    onSuccess: (data) => {
+      const pending = data?.filter((order: any) => order.status === 'pending').length || 0;
+      
+      // Play sound if pending orders increased
+      if (pending > lastPendingCount && pending > 0) {
+        playNotificationSound();
+        toast({
+          title: 'New Order Received!',
+          description: `${pending} order${pending > 1 ? 's' : ''} waiting for confirmation`,
+        });
+      }
+      
+      setLastPendingCount(pending);
+      setPendingOrders(pending);
+    },
   });
 
   const restaurantForm = useForm<RestaurantFormData>({
@@ -142,6 +174,30 @@ export default function Admin() {
     },
   });
 
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      return apiRequest('PATCH', `/api/admin/orders/${orderId}/status`, { status }, {
+        'user-id': auth.user!.id,
+        'user-role': auth.user!.role,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      toast({
+        title: 'Order updated!',
+        description: 'Order status has been updated successfully.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update order status.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Check if user is admin
   if (!auth.isAuthenticated || auth.user?.role !== 'admin') {
     return (
@@ -169,6 +225,12 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Order Notifications */}
+      <OrderNotification 
+        pendingCount={pendingOrders}
+        onViewOrders={() => setActiveTab('orders')}
+      />
+      
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -219,6 +281,23 @@ export default function Admin() {
             >
               <Store className="w-4 h-4 inline mr-2" />
               Restaurants
+            </button>
+            <button
+              className={`py-2 px-1 border-b-2 font-medium text-sm relative ${
+                activeTab === 'orders'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              onClick={() => setActiveTab('orders')}
+              data-testid="tab-orders"
+            >
+              <Menu className="w-4 h-4 inline mr-2" />
+              Orders
+              {pendingOrders > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {pendingOrders}
+                </span>
+              )}
             </button>
           </nav>
         </div>
@@ -553,6 +632,136 @@ export default function Admin() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">Manage Orders</h2>
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-500">
+                  {pendingOrders > 0 && (
+                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                      {pendingOrders} pending orders
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Orders List */}
+            <div className="space-y-4">
+              {orders?.map((order: any) => (
+                <Card key={order.id} className={`${order.status === 'pending' ? 'border-red-200 bg-red-50' : ''}`}>
+                  <CardHeader className="pb-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">Order #{order.id.slice(-8)}</CardTitle>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Customer: {order.user?.username || 'Unknown'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Restaurant: {order.restaurant?.name || 'Unknown'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-semibold">${order.totalAmount}</div>
+                        <div className={`text-sm px-2 py-1 rounded-full inline-block mt-1 ${
+                          order.status === 'pending' ? 'bg-red-100 text-red-800' :
+                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                          order.status === 'preparing' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'out_for_delivery' ? 'bg-purple-100 text-purple-800' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status.replace('_', ' ').toUpperCase()}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Order Details</h4>
+                        <p className="text-sm text-gray-600">Items: {order.itemCount}</p>
+                        <p className="text-sm text-gray-600">Payment: {order.paymentMethod}</p>
+                        <p className="text-sm text-gray-600">
+                          Ordered: {new Date(order.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-2">Delivery Address</h4>
+                        <p className="text-sm text-gray-600">{order.deliveryAddress}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Order Actions */}
+                    <div className="mt-4 flex space-x-2">
+                      {order.status === 'pending' && (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() => updateOrderStatusMutation.mutate({ orderId: order.id, status: 'confirmed' })}
+                            disabled={updateOrderStatusMutation.isPending}
+                            data-testid={`button-accept-order-${order.id}`}
+                          >
+                            Accept Order
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => updateOrderStatusMutation.mutate({ orderId: order.id, status: 'cancelled' })}
+                            disabled={updateOrderStatusMutation.isPending}
+                            data-testid={`button-reject-order-${order.id}`}
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                      {order.status === 'confirmed' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateOrderStatusMutation.mutate({ orderId: order.id, status: 'preparing' })}
+                          disabled={updateOrderStatusMutation.isPending}
+                          data-testid={`button-start-preparing-${order.id}`}
+                        >
+                          Start Preparing
+                        </Button>
+                      )}
+                      {order.status === 'preparing' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateOrderStatusMutation.mutate({ orderId: order.id, status: 'out_for_delivery' })}
+                          disabled={updateOrderStatusMutation.isPending}
+                          data-testid={`button-out-for-delivery-${order.id}`}
+                        >
+                          Out for Delivery
+                        </Button>
+                      )}
+                      {order.status === 'out_for_delivery' && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateOrderStatusMutation.mutate({ orderId: order.id, status: 'delivered' })}
+                          disabled={updateOrderStatusMutation.isPending}
+                          data-testid={`button-mark-delivered-${order.id}`}
+                        >
+                          Mark as Delivered
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {(!orders || orders.length === 0) && (
+                <Card>
+                  <CardContent className="text-center py-8">
+                    <p className="text-gray-500">No orders found.</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         )}

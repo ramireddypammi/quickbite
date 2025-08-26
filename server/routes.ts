@@ -255,18 +255,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const restaurants = await storage.getAllRestaurants();
       const totalRestaurants = restaurants.length;
+      const orders = await storage.getAllOrders();
+      const totalOrders = orders.length;
+      const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.totalAmount), 0);
       
-      // Mock stats for demo
       const stats = {
         totalRestaurants,
-        totalOrders: 0,
+        totalOrders,
         totalUsers: 0,
-        totalRevenue: 0
+        totalRevenue: totalRevenue.toFixed(2)
       };
       
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/orders", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const orders = await storage.getAllOrders();
+      const ordersWithDetails = await Promise.all(
+        orders.map(async (order) => {
+          const restaurant = await storage.getRestaurant(order.restaurantId);
+          const user = await storage.getUser(order.userId);
+          const items = await storage.getOrderItems(order.id);
+          return {
+            ...order,
+            restaurant: restaurant ? { id: restaurant.id, name: restaurant.name } : null,
+            user: user ? { id: user.id, username: user.username } : null,
+            itemCount: items.length
+          };
+        })
+      );
+      
+      res.json(ordersWithDetails);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.patch("/api/admin/orders/:id/status", async (req, res) => {
+    try {
+      const userRole = req.headers['user-role'] as string;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { status } = req.body;
+      const order = await storage.updateOrderStatus(req.params.id, status);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update order status" });
     }
   });
 
