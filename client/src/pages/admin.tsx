@@ -68,22 +68,6 @@ export default function Admin() {
     enabled: auth.isAuthenticated && auth.user?.role === 'admin',
   });
 
-  // Check if user is admin
-  if (!auth.isAuthenticated || auth.user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <p className="text-gray-500 mb-4">Access denied. Admin privileges required.</p>
-            <Button onClick={() => setLocation('/login')} data-testid="button-login">
-              Go to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const restaurantForm = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
@@ -157,6 +141,22 @@ export default function Admin() {
       });
     },
   });
+
+  // Check if user is admin
+  if (!auth.isAuthenticated || auth.user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-gray-500 mb-4">Access denied. Admin privileges required.</p>
+            <Button onClick={() => setLocation('/login')} data-testid="button-login">
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const handleLogout = () => {
     logout();
