@@ -1,0 +1,82 @@
+Generate a full-stack project named "quickbite-app" for a food delivery platform.  
+The project should have a **React.js frontend**, a **Flask backend**, **MongoDB database**, **Razorpay payment integration**, and **Terraform for AWS deployment**.  
+Use a clean and modular folder structure.
+
+📂 Project Structure:
+quickbite-app/
+│── frontend/                # React.js Frontend
+│   ├── public/
+│   ├── src/
+│   │   ├── components/      # Navbar, Footer, etc.
+│   │   ├── pages/           # Home, Cart, Checkout, Orders
+│   │   ├── services/        # API calls (Axios)
+│   │   ├── App.js
+│   │   └── index.js
+│   ├── package.json
+│   └── .env                 # Backend URL, Razorpay key
+│
+│── backend/                 # Flask Backend
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── routes/
+│   │   │   ├── auth.py
+│   │   │   ├── restaurants.py
+│   │   │   ├── menu.py
+│   │   │   ├── orders.py
+│   │   │   └── payments.py   # Razorpay integration
+│   │   ├── models/
+│   │   │   ├── user_model.py
+│   │   │   ├── order_model.py
+│   │   │   └── restaurant_model.py
+│   │   ├── utils/
+│   │   │   ├── db.py         # MongoDB connection
+│   │   │   └── jwt.py        # JWT Auth
+│   │   └── config.py
+│   ├── requirements.txt
+│   ├── run.py
+│   └── .env                  # Flask secrets, Razorpay keys
+│
+│── terraform/               # Terraform IaC for AWS
+│   ├── main.tf              # EC2, ECS/EKS, VPC, IAM
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── provider.tf
+│
+│── scripts/                 # Deployment scripts
+│   └── deploy.sh
+│
+│── docker-compose.yml       # Local dev (React + Flask + Mongo)
+│── Dockerfile.frontend
+│── Dockerfile.backend
+│── .gitignore
+└── README.md
+
+✨ Requirements:
+- **Frontend (React.js)** should include:
+  - API service file using Axios for `/restaurants`, `/menu`, `/cart`, `/order`, `/payment`
+  - Pages: Home (restaurant list), Menu, Cart, Checkout (Razorpay integration), Order tracking
+  - User-friendly UI components (Material UI or Tailwind CSS)
+  - `.env` for backend API URL and Razorpay Key
+
+- **Backend (Flask)** should include:
+  - Authentication routes (JWT login/signup)
+  - Restaurant and menu endpoints
+  - Orders handling
+  - Payments integration using Razorpay (`/payment/create` and `/payment/verify`)
+  - MongoDB connection utility
+  - Configurable `.env` file for DB connection + Razorpay keys
+  - requirements.txt (Flask, Flask-CORS, Flask-PyMongo, Flask-JWT-Extended, Razorpay)
+
+- **Terraform** should:
+  - Create a VPC, Security Group, EC2 instance (Ubuntu), S3 bucket, IAM role
+  - Output public IP for backend deployment
+
+- **Docker**:
+  - Dockerfile for frontend (React build → Nginx)
+  - Dockerfile for backend (Flask + Gunicorn)
+  - docker-compose.yml to run frontend, backend, and MongoDB locally
+
+- **Deployment**:
+  - `scripts/deploy.sh` to build and push Docker images, run Terraform apply
+
+The output should include **ready-to-run boilerplate code** for each folder with proper imports, sample routes, and API integration stubs.
