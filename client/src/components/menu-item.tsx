@@ -30,7 +30,7 @@ export default function MenuItemComponent({ item }: MenuItemProps) {
           {item.description}
         </p>
         <span className="text-lg font-bold text-primary" data-testid={`text-item-price-${item.id}`}>
-          ${item.price}
+          ₹{item.price}
         </span>
       </CardContent>
       <div className="flex items-center space-x-4 ml-4">

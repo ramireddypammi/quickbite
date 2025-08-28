@@ -447,7 +447,7 @@ export default function Admin() {
                             name="deliveryFee"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Delivery Fee ($)</FormLabel>
+                                <FormLabel>Delivery Fee (₹)</FormLabel>
                                 <FormControl>
                                   <Input {...field} placeholder="2.99" data-testid="input-restaurant-delivery-fee" />
                                 </FormControl>
@@ -565,7 +565,7 @@ export default function Admin() {
                             name="price"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Price ($)</FormLabel>
+                                <FormLabel>Price (₹)</FormLabel>
                                 <FormControl>
                                   <Input {...field} placeholder="12.99" data-testid="input-menu-item-price" />
                                 </FormControl>
@@ -626,7 +626,7 @@ export default function Admin() {
                       <p className="text-gray-600 text-sm mb-2">{restaurant.description}</p>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-500">{restaurant.cuisine}</span>
-                        <span className="text-primary font-medium">${restaurant.deliveryFee} delivery</span>
+                        <span className="text-primary font-medium">₹{restaurant.deliveryFee} delivery</span>
                       </div>
                     </div>
                   </CardContent>
@@ -668,7 +668,7 @@ export default function Admin() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-semibold">${order.totalAmount}</div>
+                        <div className="text-lg font-semibold">₹{order.totalAmount}</div>
                         <div className={`text-sm px-2 py-1 rounded-full inline-block mt-1 ${
                           order.status === 'pending' ? 'bg-red-100 text-red-800' :
                           order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :

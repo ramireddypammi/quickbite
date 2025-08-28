@@ -78,7 +78,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               {restaurant.deliveryTime}
             </span>
             <span className="text-gray-600" data-testid={`text-delivery-fee-${restaurant.id}`}>
-              ${restaurant.deliveryFee} delivery
+              ₹{restaurant.deliveryFee} delivery
             </span>
           </div>
         </div>

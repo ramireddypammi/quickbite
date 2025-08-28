@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Search, MapPin, ShoppingCart, ChevronDown, Utensils, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,22 @@ export default function Navbar() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [userLocation, setUserLocation] = useState('Hyderabad, Telangana');
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [tempLocation, setTempLocation] = useState('');
+
+  // Load location from localStorage on component mount
+  useEffect(() => {
+    const savedLocation = localStorage.getItem('userLocation');
+    if (savedLocation) {
+      setUserLocation(savedLocation);
+    }
+  }, []);
+
+  // Save location to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('userLocation', userLocation);
+  }, [userLocation]);
 
   const handleLogout = () => {
     logout();
@@ -21,6 +37,42 @@ export default function Navbar() {
       title: "Logged out",
       description: "You have been logged out successfully.",
     });
+  };
+
+  const handleLocationEdit = () => {
+    setIsEditingLocation(true);
+    setTempLocation(userLocation);
+    // Auto-focus the input after a short delay to ensure it's rendered
+    setTimeout(() => {
+      const desktopInput = document.querySelector('[data-testid="input-location"]') as HTMLInputElement;
+      const mobileInput = document.querySelector('[data-testid="input-location-mobile"]') as HTMLInputElement;
+      if (desktopInput) desktopInput.focus();
+      if (mobileInput) mobileInput.focus();
+    }, 100);
+  };
+
+  const handleLocationSave = () => {
+    if (tempLocation.trim()) {
+      setUserLocation(tempLocation.trim());
+      setIsEditingLocation(false);
+      toast({
+        title: "Location updated",
+        description: `Your delivery location has been set to ${tempLocation.trim()}`,
+      });
+    }
+  };
+
+  const handleLocationCancel = () => {
+    setIsEditingLocation(false);
+    setTempLocation('');
+  };
+
+  const handleLocationKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLocationSave();
+    } else if (e.key === 'Escape') {
+      handleLocationCancel();
+    }
   };
 
   return (
@@ -32,14 +84,63 @@ export default function Navbar() {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Utensils className="text-white text-lg" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">QuickBite</span>
+            <span className="text-2xl font-bold text-gray-900">QuickBite X RamiReddy</span>
           </Link>
 
           {/* Location Selector */}
           <div className="hidden md:flex items-center space-x-2 bg-gray-50 rounded-lg px-4 py-2">
             <MapPin className="text-primary w-4 h-4" />
-            <span className="text-sm text-gray-700">Downtown, New York</span>
-            <ChevronDown className="text-xs text-gray-500 w-3 h-3" />
+            {isEditingLocation ? (
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  value={tempLocation}
+                  onChange={(e) => setTempLocation(e.target.value)}
+                  onKeyDown={handleLocationKeyDown}
+                  placeholder="Enter your location"
+                  className="w-32 h-6 text-sm border-0 bg-transparent p-0 focus:ring-0 focus:outline-none"
+                  data-testid="input-location"
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleLocationSave}
+                  className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                  data-testid="button-save-location"
+                >
+                  ✓
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleLocationCancel}
+                  className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                  data-testid="button-cancel-location"
+                >
+                  ✕
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <span 
+                  className="text-sm text-gray-700 cursor-pointer" 
+                  data-testid="text-user-location"
+                  title="Click the edit button to change your delivery location"
+                >
+                  {userLocation}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleLocationEdit}
+                  className="h-6 w-6 p-0 text-gray-500 hover:text-primary transition-colors"
+                  data-testid="button-edit-location"
+                  title="Edit delivery location"
+                >
+                  ✎
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Search Bar */}
@@ -54,6 +155,80 @@ export default function Navbar() {
                 data-testid="input-search"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            </div>
+          </div>
+
+          {/* Mobile Search and Location */}
+          <div className="lg:hidden flex-1 mx-4">
+            <div className="space-y-2">
+              {/* Mobile Search */}
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search restaurants, cuisines..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  data-testid="input-search-mobile"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              </div>
+              
+              {/* Mobile Location */}
+              <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-2">
+                <MapPin className="text-primary w-4 h-4" />
+                {isEditingLocation ? (
+                  <div className="flex items-center space-x-2 flex-1">
+                    <Input
+                      type="text"
+                      value={tempLocation}
+                      onChange={(e) => setTempLocation(e.target.value)}
+                      onKeyDown={handleLocationKeyDown}
+                      placeholder="Enter your location"
+                      className="flex-1 h-6 text-sm border-0 bg-transparent p-0 focus:ring-0 focus:outline-none"
+                      data-testid="input-location-mobile"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleLocationSave}
+                      className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+                      data-testid="button-save-location-mobile"
+                    >
+                      ✓
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleLocationCancel}
+                      className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                      data-testid="button-cancel-location-mobile"
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2 flex-1">
+                    <span 
+                      className="text-sm text-gray-700 flex-1 cursor-pointer" 
+                      data-testid="text-user-location-mobile"
+                      title="Click the edit button to change your delivery location"
+                    >
+                      {userLocation}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleLocationEdit}
+                      className="h-6 w-6 p-0 text-gray-500 hover:text-primary transition-colors"
+                      data-testid="button-edit-location-mobile"
+                      title="Edit delivery location"
+                    >
+                      ✎
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

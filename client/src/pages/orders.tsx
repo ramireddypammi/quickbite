@@ -190,7 +190,7 @@ export default function Orders() {
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Total Amount</span>
                             <span className="font-semibold text-gray-900" data-testid={`text-order-total-${order.id}`}>
-                              ${order.totalAmount}
+                              ₹{order.totalAmount}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">

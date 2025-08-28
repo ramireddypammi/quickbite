@@ -295,7 +295,7 @@ export default function Checkout() {
                       data-testid="button-place-order"
                     >
                       <Lock className="w-4 h-4 mr-2" />
-                      {isProcessing ? 'Processing...' : `Place Order - $${total.toFixed(2)}`}
+                      {isProcessing ? 'Processing...' : `Place Order - ₹${total.toFixed(2)}`}
                     </Button>
                   </form>
                 </Form>
@@ -313,7 +313,7 @@ export default function Checkout() {
                     <div key={item.id} className="flex justify-between py-2">
                       <span>{item.quantity}x {item.name}</span>
                       <span data-testid={`text-item-total-${item.id}`}>
-                        ${(parseFloat(item.price) * item.quantity).toFixed(2)}
+                        ₹{(parseFloat(item.price) * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -321,19 +321,19 @@ export default function Checkout() {
                   <div className="pt-4 border-t border-gray-200 space-y-2">
                     <div className="flex justify-between">
                       <span>Subtotal</span>
-                      <span data-testid="text-checkout-subtotal">${subtotal.toFixed(2)}</span>
+                      <span data-testid="text-checkout-subtotal">₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Delivery Fee</span>
-                      <span data-testid="text-checkout-delivery">${deliveryFee.toFixed(2)}</span>
+                      <span data-testid="text-checkout-delivery">₹{deliveryFee.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Tax</span>
-                      <span data-testid="text-checkout-tax">${tax.toFixed(2)}</span>
+                      <span data-testid="text-checkout-tax">₹{tax.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-200">
                       <span>Total</span>
-                      <span data-testid="text-checkout-total">${total.toFixed(2)}</span>
+                      <span data-testid="text-checkout-total">₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

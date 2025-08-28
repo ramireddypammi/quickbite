@@ -67,7 +67,7 @@ export default function CartSidebar() {
                         </h4>
                         <p className="text-sm text-gray-600">From Restaurant</p>
                         <span className="text-primary font-semibold" data-testid={`text-cart-item-price-${item.id}`}>
-                          ${item.price}
+                          ₹{item.price}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -103,20 +103,20 @@ export default function CartSidebar() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span data-testid="text-subtotal">${getTotalPrice().toFixed(2)}</span>
+                    <span data-testid="text-subtotal">₹{getTotalPrice().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Delivery Fee</span>
-                    <span data-testid="text-delivery-fee">${deliveryFee.toFixed(2)}</span>
+                    <span data-testid="text-delivery-fee">₹{deliveryFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
-                    <span data-testid="text-tax">${tax.toFixed(2)}</span>
+                    <span data-testid="text-tax">₹{tax.toFixed(2)}</span>
                   </div>
                   <Separator className="my-2" />
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span data-testid="text-total">${total.toFixed(2)}</span>
+                    <span data-testid="text-total">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
